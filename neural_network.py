@@ -1,9 +1,10 @@
 import random
 from activation import ActivationFunction
+from utils import draw_progess_bar
 
+STR_REPORT_BROADER = '+'+'-' * 60 + '+'
 
 class NeuralNetwork:
-    # def __init__(self, n_inputs=2, n_outputs, n_hiddens = 0, activ_func = 'Sigmoid'):
     def __init__(self, activ_func = 'Sigmoid', learning_rate='0.01', debug=True):
         self.activ_func = ActivationFunction(types=activ_func)
         self.layers = []
@@ -67,6 +68,11 @@ class NeuralNetwork:
 
         return None
 
+    def calculate_single_error(self, targets, actual_outputs):
+        error = 0
+        for i in range(len(targets)):
+            error += (targets[i] - actual_outputs[i]) ** 2
+        return error
 
     def calculate_total_error(self, dataset):
         """
@@ -74,29 +80,54 @@ class NeuralNetwork:
         """
         total_error = 0
         for inputs, targets in dataset:
-            # actual_outputs = self.feed_forward(inputs) # because you have to calculate the updated outputs, not = self.layers[-1].actual_outputs
-            actual_outputs = self.layers[-1].actual_outputs
-
-            for i in range(len(targets)):
-                total_error += (targets[i] - actual_outputs[i]) ** 2
+            actual_outputs = self.feed_forward(inputs)  # because you have to calculate the updated outputs, not = self.layers[-1].actual_outputs
+            total_error += self.calculate_single_error(targets, actual_outputs)
 
         return total_error / len(dataset)
 
 
-    def train(self, dataset, n_iterations=100):
+    def train(self, dataset, n_iterations=100, print_error_report=True):
+
+        print('\n> Training...')
+        print(STR_REPORT_BROADER)
+
         for i in range(n_iterations):
-            print('\n>> Iteration #{}'.format(i+1))
+            print('| # {}/{}\t| '.format(i+1, n_iterations), end="", flush=True)
             for j, (inputs, targets) in enumerate(dataset):
                 if self.debug:
                     print('\n>>> data #{}'.format(j+1))
                 self.feed_forward(inputs)
                 self.feed_backward(targets)
                 self.update_weights()
-            print('Total error: {}\n'.format(self.calculate_total_error(dataset)))
-        return
+            total_error = self.calculate_total_error(dataset)
 
-    def test(self):
-        return
+            if print_error_report:
+                print(' Total error: {}'.format(total_error))
+            else:
+                draw_progess_bar(n_finished=i+1, n_jobs=n_iterations, sleep_time=0.05) # draw progress bar
+
+        print('\n' + STR_REPORT_BROADER)
+        print('Training Finish. Error = {}\n'.format(total_error))
+
+        return None
+
+    def test(self, dataset):
+        print('\n> Testing...')
+        print(STR_REPORT_BROADER)
+
+        for j, (inputs, targets) in enumerate(dataset):
+            if self.debug:
+                print('\n>>> data #{}'.format(j+1))
+
+            actual_outputs = self.feed_forward(inputs)
+            print('[#{}] {} -> {} (targets={})'.format(j, inputs, actual_outputs, targets))
+        total_error = self.calculate_total_error(dataset)
+
+        print(STR_REPORT_BROADER)
+        print('Testing Finish. Error: {}\n'.format(total_error))
+
+        return None
+
 
 class NeuralLayer:
     __counter = 0
@@ -108,9 +139,9 @@ class NeuralLayer:
     def neurons(self):
         return self.__neurons
 
-    @property
-    def actual_outputs(self):
-        return [neuron.output for neuron in self.neurons]
+    # @property
+    # def actual_outputs(self):
+    #     return [neuron.output for neuron in self.neurons]
 
     @property
     def deltas(self):
@@ -177,22 +208,3 @@ class Neuron:
 
     def __str__(self):
         return '--- weights = {}, bias = {}'.format(self.__weights, self.__bias)
-
-
-def demo():
-    # [(inputs, outputs)]
-    # example of XOR
-    dataset = [
-                [(1, 0), [1]],
-                [(0, 0), [0]],
-                [(0, 1), [1]],
-                [(1, 1), [0]]
-                ]
-
-    nn = NeuralNetwork(learning_rate=0.1, debug=False)
-    nn.add_layer(n_inputs=2, n_neurons=3)
-    nn.add_layer(n_inputs=3, n_neurons=1)
-    nn.train(dataset=dataset, n_iterations=50)
-
-if __name__ == '__main__':
-    demo()
