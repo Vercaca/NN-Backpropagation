@@ -1,5 +1,5 @@
 # Neural Network with BackPropagation
-Implement my Viterbi Algorithm with Python3.
+Implement a simple Neural network trained with backprogation in Python3.
 
 ## How to train a supervised Neural Network?
 1. Feed Forward
