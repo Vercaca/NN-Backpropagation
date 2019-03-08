@@ -7,6 +7,9 @@ Implement my Viterbi Algorithm with Python3.
 3. Update Weights
 Iterating the above three steps
 
+![FeedForward vs. FeedBackward](https://cdn-images-1.medium.com/max/1600/1*q1M7LGiDTirwU-4LcFq7_Q.png)
+Figure 1. FeedForward vs. FeedBackward (by Mayank Agarwal)
+
 
 ## Description of BackPropagation (小筆記)
 Backpropagation is the implementation of gradient descent in multi-layer neural networks. Since the same training rule recursively exists in each layer of the neural network, we can calculate the contribution of each weight to the total error inversely from the output layer to the input layer, which is so-called backpropagation.
@@ -88,6 +91,7 @@ Concepts:
 - [Gradient Descent and Backpropagation By Ken Chen](https://www.linkedin.com/pulse/gradient-descent-backpropagation-ken-chen/)
 - [gradient descent optimization algorithms By Tommy Huang](https://medium.com/@chih.sheng.huang821/%E6%A9%9F%E5%99%A8%E5%AD%B8%E7%BF%92-%E5%9F%BA%E7%A4%8E%E6%95%B8%E5%AD%B8-%E4%B8%89-%E6%A2%AF%E5%BA%A6%E6%9C%80%E4%BD%B3%E8%A7%A3%E7%9B%B8%E9%97%9C%E7%AE%97%E6%B3%95-gradient-descent-optimization-algorithms-b61ed1478bd7)
 - [Delta Rule By Wikipedia](https://en.wikipedia.org/wiki/Delta_rule)
+- [Figure_1 Feedforward vs. Feedbackward](https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199)
 
 Coding:
 
