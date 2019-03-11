@@ -23,6 +23,16 @@ Gradient descent is a first-order iterative optimization algorithm, which is use
 3. Go (down) along this direction a small step γ, got to a new point of a+1;
 By iterating the above three steps, we can find the local minima or global minima of this function.
 
+### How to Learn?
+Gradient Descent
+
+每次迭代:
+
+Input為一筆資料的features，模型透過feed forward運算出predict_Y (outputs)
+
+將所有Outputs與其相對之targets比較，利用Gradient Descent找出每個Neuron中的weights的改變方向
+
+修正Weights，下一筆資料用新的權重來進行prediction，如此類推直至收斂。
 
 ## Version
 1.0
