@@ -1,15 +1,23 @@
 import random
-from activation import ActivationFunction
+
 from utils import draw_progess_bar
+
+import sys
+sys.path.append('../../ml')
+
+from activation import ActivationFunction
+from GradientDescent import GradientDescent
 
 STR_REPORT_BROADER = '+'+'-' * 60 + '+'
 
 class NeuralNetwork:
     def __init__(self, activ_func = 'Sigmoid', learning_rate='0.01', debug=True):
-        self.activ_func = ActivationFunction(types=activ_func)
+        self.activ_func = ActivationFunction(type=activ_func)
         self.layers = []
-        self.learning_rate = learning_rate
+        # self.learning_rate = learning_rate
         self.debug = debug
+
+        self.update_methods = GradientDescent(layers=self.layers, learning_rate=learning_rate, activ_func=self.activ_func, debug=debug)
 
     def add_layer(self, n_inputs, n_neurons):
         layer = NeuralLayer(n_inputs, n_neurons, self.activ_func)
@@ -25,48 +33,55 @@ class NeuralNetwork:
 
         return inputs
 
-    def feed_backward(self, targets): # backpropagating
-        if len(targets) != len(self.layers[-1].neurons):
-            raise Exception('wrong target numbers')
 
-        # calculate deltas of output layer
-        # Delta weight_ji = - (target_j - output_j) * deactivate_func(h_j) * input_i
-        for j, neuron_j in enumerate(self.layers[-1].neurons):
-            error = - (targets[j] - neuron_j.output)
-            neuron_j.calculate_delta(error)
+    def update(self, targets):
+        self.update_methods.update(targets)
 
-        if self.debug:
-            print("Output_Layer: deltas: {}".format(self.layers[-1].get_deltas()))
+    # def feed_backward(self, targets): # backpropagating
+    #     # return self.update_methods.feed_backward(targets)
+    #
+    #
+    #     if len(targets) != len(self.layers[-1].neurons):
+    #         raise Exception('wrong target numbers')
+    #
+    #     # calculate deltas of output layer
+    #     # Delta weight_ji = - (target_j - output_j) * deactivate_func(h_j) * input_i
+    #     for j, neuron_j in enumerate(self.layers[-1].neurons):
+    #         error = - (targets[j] - neuron_j.output)
+    #         neuron_j.calculate_delta(error)
+    #
+    #     if self.debug:
+    #         print("Output_Layer: deltas: {}".format(self.layers[-1].get_deltas()))
+    #
+    #
+    #     # calculate the hidden layers
+    #     n_hidden_layers = len(self.layers[:-1])
+    #     l = n_hidden_layers - 1
+    #
+    #     while l >= 0:
+    #         curr_layer, last_layer = self.layers[l], self.layers[l+1]
+    #
+    #         for i, neuron_i in enumerate(curr_layer.neurons):
+    #             # sum up the errors sent from the last layer
+    #             total_error = 0
+    #             for j, neuron_j in enumerate(last_layer.neurons):
+    #                 total_error += neuron_j.delta * neuron_j.weights[i] # total_error += delta_j * input_i_to_j
+    #
+    #             neuron_i.calculate_delta(total_error)
+    #
+    #         if self.debug:
+    #             print("Layer {}: deltas: {}".format(l+1, curr_layer.deltas))
+    #
+    #         l -= 1
+    #
+    #     return None
 
-
-        # calculate the hidden layers
-        n_hidden_layers = len(self.layers[:-1])
-        l = n_hidden_layers - 1
-
-        while l >= 0:
-            curr_layer, last_layer = self.layers[l], self.layers[l+1]
-
-            for i, neuron_i in enumerate(curr_layer.neurons):
-                # sum up the errors sent from the last layer
-                total_error = 0
-                for j, neuron_j in enumerate(last_layer.neurons):
-                    total_error += neuron_j.delta * neuron_j.weights[i] # total_error += delta_j * input_i_to_j
-
-                neuron_i.calculate_delta(total_error)
-
-            if self.debug:
-                print("Layer {}: deltas: {}".format(l+1, curr_layer.deltas))
-
-            l -= 1
-
-        return None
-
-    def update_weights(self):
-        learning_rate = self.learning_rate
-        for l in self.layers:
-            l.update_weights(learning_rate)
-
-        return None
+    # def update_weights(self):
+    #     learning_rate = self.learning_rate
+    #     for l in self.layers:
+    #         l.update_weights(learning_rate)
+    #
+    #     return None
 
     def calculate_single_error(self, targets, actual_outputs):
         error = 0
@@ -97,8 +112,9 @@ class NeuralNetwork:
                 if self.debug:
                     print('\n>>> data #{}'.format(j+1))
                 self.feed_forward(inputs)
-                self.feed_backward(targets)
-                self.update_weights()
+                self.update(targets)
+                # self.feed_backward(targets)
+                # self.update_weights()
             total_error = self.calculate_total_error(dataset)
 
             if print_error_report:
@@ -139,10 +155,6 @@ class NeuralLayer:
     def neurons(self):
         return self.__neurons
 
-    # @property
-    # def actual_outputs(self):
-    #     return [neuron.output for neuron in self.neurons]
-
     @property
     def deltas(self):
         return [i.delta for i in self.neurons]
@@ -150,10 +162,10 @@ class NeuralLayer:
     def feed_forward(self, inputs):
         return [neuron.calculate_output(inputs) for neuron in self.neurons]
 
-    def update_weights(self, learning_rate):
-        for neuron in self.neurons:
-            neuron.update_weights(learning_rate)
-        return None
+    # def update_weights(self, learning_rate):
+    #     for neuron in self.neurons:
+    #         neuron.update_weights(learning_rate)
+    #     return None
 
     def __str__(self):
         return '-- Layer {}  # of neurons: {}'.format(self.__counter, len(self.neurons))
@@ -173,11 +185,28 @@ class Neuron:
     def output(self):
         return self.__output
     @property
+    def inputs(self):
+        return self.__inputs[:]
+    @property
     def delta(self):
         return self.__delta
     @property
     def weights(self):
         return self.__weights
+    @property
+    def n_weights(self):
+        return self.__n_weights
+    @property
+    def bias(self):
+        return self.__bias
+
+    @delta.setter
+    def delta(self, delta):
+        self.__delta = delta
+
+    @bias.setter
+    def bias(self, bias):
+        self.__bias = bias
 
     def calculate_output(self, inputs):
         n_weights = self.__n_weights
@@ -196,15 +225,15 @@ class Neuron:
     def calculate_delta(self, error):
         self.__delta = error * self.__activation.dfunc(self.__output)
 
-    def update_weights(self, learning_rate):
-        for i in range(self.__n_weights):
-            self.__weights[i] -= learning_rate * self.__delta * self.__inputs[i]
-        self.__bias -= learning_rate * self.__delta
-
-        # update output
-        self.calculate_output(self.__inputs)
-
-        return None
+    # def update_weights(self, learning_rate):
+    #     for i in range(self.__n_weights):
+    #         self.__weights[i] -= learning_rate * self.__delta * self.__inputs[i]
+    #     self.__bias -= learning_rate * self.__delta
+    #
+    #     # update output
+    #     self.calculate_output(self.__inputs)
+    #
+    #     return None
 
     def __str__(self):
         return '--- weights = {}, bias = {}'.format(self.__weights, self.__bias)
