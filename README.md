@@ -23,8 +23,15 @@ Gradient descent is a first-order iterative optimization algorithm, which is use
 3. Go (down) along this direction a small step γ, got to a new point of a+1;
 By iterating the above three steps, we can find the local minima or global minima of this function.
 
+### Stochastic Gradient Descent (SGD)
+The advantage of this method is that the gradient is accurate and the function converges fast. But when the training dataset is enormous, the evaluation of the gradient from all data points becomes expensive and the training time can be very long.
+
+Another method is called stochastic gradient descent, which samples (with replacement) a subset (one or more) of training data to calculate the gradient. 
+
+
+## My Implementation
 ### How to Learn?
-Gradient Descent
+Stochastic Gradient Descent
 
 每次迭代:
 
