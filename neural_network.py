@@ -29,8 +29,6 @@ class NeuralNetwork:
         if len(targets) != len(self.layers[-1].neurons):
             raise Exception('wrong target numbers')
 
-        # calculate deltas of output layer
-        # Delta weight_ji = - (target_j - output_j) * deactivate_func(h_j) * input_i
         for j, neuron_j in enumerate(self.layers[-1].neurons):
             error = - (targets[j] - neuron_j.output)
             neuron_j.calculate_delta(error)
@@ -39,7 +37,6 @@ class NeuralNetwork:
             print("Output_Layer: deltas: {}".format(self.layers[-1].get_deltas()))
 
 
-        # calculate the hidden layers
         n_hidden_layers = len(self.layers[:-1])
         l = n_hidden_layers - 1
 
@@ -47,7 +44,6 @@ class NeuralNetwork:
             curr_layer, last_layer = self.layers[l], self.layers[l+1]
 
             for i, neuron_i in enumerate(curr_layer.neurons):
-                # sum up the errors sent from the last layer
                 total_error = 0
                 for j, neuron_j in enumerate(last_layer.neurons):
                     total_error += neuron_j.delta * neuron_j.weights[i] # total_error += delta_j * input_i_to_j
@@ -75,12 +71,9 @@ class NeuralNetwork:
         return error
 
     def calculate_total_error(self, dataset):
-        """
-        Return mean squared error of dataset
-        """
         total_error = 0
         for inputs, targets in dataset:
-            actual_outputs = self.feed_forward(inputs)  # because you have to calculate the updated outputs, not = self.layers[-1].actual_outputs
+            actual_outputs = self.feed_forward(inputs)  
             total_error += self.calculate_single_error(targets, actual_outputs)
 
         return total_error / len(dataset)
@@ -139,10 +132,6 @@ class NeuralLayer:
     def neurons(self):
         return self.__neurons
 
-    # @property
-    # def actual_outputs(self):
-    #     return [neuron.output for neuron in self.neurons]
-
     @property
     def deltas(self):
         return [i.delta for i in self.neurons]
@@ -187,7 +176,6 @@ class Neuron:
         output = sum([inputs[i] * self.__weights[i] for i in range(n_weights)])
         a_output = self.__activation.func(output + self.__bias)
 
-        # set the variables
         self.__inputs = inputs
         self.__output = a_output
 
@@ -201,7 +189,6 @@ class Neuron:
             self.__weights[i] -= learning_rate * self.__delta * self.__inputs[i]
         self.__bias -= learning_rate * self.__delta
 
-        # update output
         self.calculate_output(self.__inputs)
 
         return None
